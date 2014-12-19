@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/rajesha660/NodeExercise1/issues"
   },
-  "homepage": "https://github.com/rajesha660/NodeExercise1"
+  "homepage": "https://github.com/rajesha660/NodeExercise1",
+  "dependencies": {
+    "consolidate": "^0.10.0",
+    "express": "^4.10.6",
+    "swig": "^1.4.2"
+  }
 }
