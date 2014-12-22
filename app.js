@@ -117,7 +117,7 @@ app.get('/filedownload/:name', function(req, res) {
 	console.log(req.params.name);
 	var filename = req.params.name;
 	res.download('./uploads/'+filename, function(err) {
-		res.redirect('/');
+		// res.redirect('/');
 	});
 });
 
