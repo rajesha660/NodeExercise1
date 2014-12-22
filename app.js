@@ -5,7 +5,9 @@ var https = require('https')
 	, domain = require('domain')
 	, express = require('express')
 	, app = express()
-	, cons = require('consolidate');
+	, cons = require('consolidate')
+	, multipart = require('connect-multiparty')
+	, fs = require('fs');
 	
 var options = {
 	key: fs.readFileSync(__dirname + '/ssl/nodeexercise1.pem'),
@@ -15,6 +17,15 @@ var options = {
 app.engine('html', cons.swig);
 app.set('view engine', 'html');
 app.set('views', __dirname + '/views');
+
+app.use(multipart());
+app.use(function(req, res, next) {
+
+	var message = "Path:"+req.path;
+	console.log(message);
+	fs.appendFileSync('log.txt', message);
+	next();
+});
 
 if(cluster.isMaster) {
 	for(var i = 0; i < numCPUs; i++) {
@@ -70,13 +81,43 @@ if(cluster.isMaster) {
 		d.add(req);
 		d.add(res);
 		
-		next();
+		next();																												
 	});
 	
 	server.listen(8080);
 }
 
 app.get('/', function(req, res) {
-	res.render('home');
+
+	var files = fs.readdirSync('./uploads/');
+	res.render('home', { 'files': files});
+});
+
+app.post('/fileupload', function(req, res) {
+	
+	var temp_path = req.files.fileupload.path;
+	
+	var target_path = './uploads/' + req.files.fileupload.name;
+	
+	console.log(temp_path);
+	console.log(target_path);
+	
+	var is = fs.createReadStream(temp_path);
+	var os = fs.createWriteStream(target_path);
+
+	is.pipe(os);
+	is.on('end',function() {
+		fs.unlinkSync(temp_path);
+	});
+	res.redirect('/');
+});
+
+app.get('/filedownload/:name', function(req, res) {
+	
+	console.log(req.params.name);
+	var filename = req.params.name;
+	res.download('./uploads/'+filename, function(err) {
+		res.redirect('/');
+	});
 });
 
